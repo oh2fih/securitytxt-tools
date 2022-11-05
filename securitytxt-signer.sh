@@ -97,9 +97,7 @@ fi
 if [ "$#" -lt 3 ]; then
   echo -e '\033[0;33mOutput file not specified; printing to stdout.\033[0m' >&2
   OUTFILE="-"
-fi
-
-if [ -f "$OUTFILE" ]; then
+elif [ -f "$OUTFILE" ]; then
   echo -e "\033[0;33mThe output file (${OUTFILE}) already exists.\033[0m" >&2
   echo -e "\033[0;33mGnuPG will ask later whether to overwrite it.\033[0m" >&2
   echo
@@ -200,9 +198,20 @@ while read -r RAWLINE || { [ -n "$RAWLINE" ] && echo "ADDED NEWLINE @EOF"; }; do
       else
         echo "REMOVED (INVALID EMAIL): ${LINE}" >&2
       fi
-    elif [[ "$LINE" =~ ^(Contact:)[[:space:]](tel:)[+]?[0-9\-]+$ ]]; then
-      FORMATTED+="${LINE}"$'\n'
-      ((CONTACT_SEEN=CONTACT_SEEN+1))
+    elif [[ "$LINE" =~ ^(Contact:)[[:space:]](tel:) ]]; then
+      # Automatically fix a commmon tel: URI mistake based on RFC 3966, 5.1.1;
+      # "tel" URIs MUST NOT use spaces in visual separators. Replacing spaces
+      # with hyphens that are allowed in the examples (RFC 3966, 6).
+      FIXEDLINE=$(echo "$LINE" | sed -e 's/[[:space:]]*$//' | sed "s/ /\\-/2g")
+      if [[ "$FIXEDLINE" =~ ^(Contact:)[[:space:]](tel:)[+]?[0-9\-]+$ ]]; then
+        if ! [[ "$FIXEDLINE" = "$LINE" ]]; then
+          echo "FIXED (tel: MUST NOT use spaces; RFC 3966, 5.1.1): ${LINE}" >&2
+        fi
+        FORMATTED+="${FIXEDLINE}"$'\n'
+        ((CONTACT_SEEN=CONTACT_SEEN+1))
+      else
+        echo "REMOVED (INVALID TEL): ${LINE}" >&2
+      fi
     else
       echo "REMOVED (INVALID/UNKNOWN CONTACT URI): ${LINE}" >&2
     fi
