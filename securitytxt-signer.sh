@@ -5,10 +5,11 @@ read -r -d '' USAGE << EOM
 #
 # Usage: securitytxt-signer.sh input.txt [0xPGPKEY [output.txt]]
 #
-# Removes lines not matching the specification, checks for
-# required fields, updates Expires field to today + \$DAYS_MAX 
-# days (unless the optional PGP key expires before that) and 
-# (optionally) signs the security.txt with GnuPG.
+# Removes lines not matching the specification & HTTPS URLS not
+# working, checks for required fields, updates Expires field to
+# today + \$DAYS_MAX days (unless the optional PGP key expires
+# before that). Optionally signs the security.txt with GnuPG &
+# warns on Encryption fields not matching with the signing key.
 #
 # Can be used to re-sign a security.txt file with an updated
 # Expires field as the validation removes the current signature.
@@ -76,6 +77,7 @@ if ! [[ "$KEY" =~ ^0x[a-fA-F0-9]{8,40}$ ]]; then
   echo -e '\033[0;33m only validating & formatting, not saving.\033[0m' >&2
 else
   KEY_INFO=$(gpg --list-secret-keys "$KEY" 2> >(sed $'s,.*,\e[33m&\e[m,'>&2))
+
   KEY_EXPIRES=$(
     echo "$KEY_INFO" \
       | grep "sec" \
@@ -89,6 +91,14 @@ else
   if [[ "$KEY_EXPIRES" = "" ]]; then
     echo -e "\033[0;31mERROR! Unable to sign with PGP key ${KEY}\033[0m" >&2
     exit 1
+  fi
+
+  # Replace PGP IDs with the full PGP fingerprint.
+  GREPABLE_KEY=${KEY//0x/}
+  FP=$(echo "$KEY_INFO" | grep -i "$GREPABLE_KEY" | sed -e 's/[^A-F0-9]//g')
+  KEY="0x${FP}"
+  if ! [[ "${KEY}" = "0x${GREPABLE_KEY^^}" ]]; then
+    echo -e "\033[0;33mEXPANDED 0x${GREPABLE_KEY^^} TO ${KEY}\033[0;0m"
   fi
 fi
 
@@ -124,11 +134,21 @@ else
   fi
 fi
 
-# HTTPS URL & email address validators.
+# HTTPS URL, HTTPS PGP public key & email address validators.
 
 test_https_url() {
   if [[ "$1" =~ ^(https:) ]]; then
     curl --silent --fail "$1" > /dev/null
+  else
+    return 1
+  fi
+}
+
+compare_https_pgpkey() {
+  if [[ "$1" =~ ^(https:) ]]; then
+    curl --silent --fail "$1" \
+      | gpg --show-key 2> /dev/null \
+      | grep "${FP}" > /dev/null
   else
     return 1
   fi
@@ -237,12 +257,22 @@ while read -r RAWLINE || { [ -n "$RAWLINE" ] && echo "ADDED NEWLINE @EOF"; }; do
     if [[ "$LINE" =~ ^(Encryption:)[[:space:]](https:) ]]; then
       URL=$(echo "$LINE" | grep -Eo 'https://[^ >]+' | head -1)
       if test_https_url "$URL"; then
+        # Comparison only if signing key is specified.
+        if [[ "$KEY" =~ ^0x[a-fA-F0-9]{8,40}$ ]]; then
+          if ! compare_https_pgpkey "$URL"; then
+            echo "WARNING! SIGNING KEY NOT FOUND @ THE FETCHED URL: ${LINE}" >&2
+          fi
+        fi
         FORMATTED+="${LINE}"$'\n'
       else
         echo "REMOVED (URL NOT WORKING): ${LINE}" >&2
       fi
     elif [[ "$LINE" =~ ^(Encryption:)[[:space:]](openpgp4fpr:) ]]; then
       if [[ "$LINE" =~ $REGEX_ENC_O4F ]]; then
+        # Comparison with empty fingerprint always passes.
+        if ! [[ "$LINE" == *"$FP"* ]]; then
+          echo "WARNING! SIGNING KEY & OPENPGP4FPR DO NOT MATCH: ${LINE}" >&2
+        fi
         FORMATTED+="${LINE}"$'\n'
       else
         echo "REMOVED (INVALID OPENPGP4FPR; not 40 hex chars): ${LINE}" >&2

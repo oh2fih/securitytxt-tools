@@ -20,10 +20,8 @@ missing.
 
 The `Expires` field is updated to be 364 days in future (configurable) unless
 the (optional) PGP key used for signing expires earlier; in that case the key
-expiration date is used instead. The script does not test whether the same key
-is used for signing and referenced in the `Encryption` fields. However, the
-logic used for updating the `Expires` field assumes this (rather obvious) use
-case.
+expiration date is used instead. The script also warns if the `Encryption`
+fields are referensing a different key than the one used for signing.
 
 The script can also be used to re-sign a security.txt file with an updated
 `Expires` field as the validation removes the current signature.
