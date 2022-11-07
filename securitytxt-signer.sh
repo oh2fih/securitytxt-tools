@@ -5,7 +5,7 @@ read -r -d '' USAGE << EOM
 #
 # Usage: securitytxt-signer.sh input.txt [0xPGPKEY [output.txt]]
 #
-# Removes lines not matching the specification & HTTPS URLS not
+# Removes lines not matching the specification & HTTPS URLs not
 # working, checks for required fields, updates Expires field to
 # today + \$DAYS_MAX days (unless the optional PGP key expires
 # before that). Optionally signs the security.txt with GnuPG &
@@ -301,7 +301,9 @@ while read -r RAWLINE || { [ -n "$RAWLINE" ] && echo "ADDED NEWLINE @EOF"; }; do
     fi
 
   # Remove invalid lines allowing comments and empty lines.
-  elif [[ "$LINE" =~ ^($|#) ]]; then
+  elif [[ "$LINE" =~ ^# ]]; then
+    FORMATTED+="${LINE}"$'\n'
+  elif [[ "$LINE" =~ ^$ ]]; then
     if ! [[ "$FORMATTED" = "" ]]; then
       FORMATTED+="${LINE}"$'\n'
     fi
