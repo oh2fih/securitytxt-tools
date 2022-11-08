@@ -138,7 +138,10 @@ fi
 
 test_https_url() {
   if [[ "$1" =~ ^(https:) ]]; then
-    curl --silent --fail "$1" > /dev/null
+    RESP=$(curl --silent --fail -o /dev/null -w "%{http_code}" "$1") || return 1
+    if ! [[ "$RESP" = "200" ]]; then
+      echo "WARNING! HTTP STATUS $RESP (not 200 ok): $1" >&2
+    fi
   else
     return 1
   fi
