@@ -158,7 +158,12 @@ compare_https_pgpkey() {
 }
 
 validate_email() {
-  if [[ "$1" =~ ^[[:alnum:]._%+-]+@[[:alnum:].-]+\.[[:alpha:].]{2,4}$ ]]; then
+  REGEX_USER="[[:alnum:]._%+-]+"
+  REGEX_HOST="[[:alnum:].-]+"
+  REGEX_TLD="(XN--[[:alnum:].-]{2,18}|[[:alpha:].-]{2,18})"
+  REGEX_EMAIL="^${REGEX_USER}@${REGEX_HOST}\.${REGEX_TLD}$"
+
+  if [[ "$1" =~ $REGEX_EMAIL ]]; then
     return 0
   else
     return 1
