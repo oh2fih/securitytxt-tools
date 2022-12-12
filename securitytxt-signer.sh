@@ -196,7 +196,8 @@ echo -e '\033[31m'
 
 while read -r RAWLINE || { [ -n "$RAWLINE" ] && echo "ADDED NEWLINE @EOF"; }; do
   # Replace CR/LF with LF. This is not a requirement from the RFC, but required
-  # by the operations on this script. (Intentionally not passing SC2001.)
+  # by the operations on this script. (Not possible with parameter expansion.)
+  # shellcheck disable=SC2001
   LINE=$(echo "$RAWLINE" | sed -e "s/\r$//")
 
   # Update Expires-field.
