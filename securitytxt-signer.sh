@@ -116,7 +116,7 @@ fi
 # Set expire date. 
 # If the key expires before the DAYS_MAX, use the key expiration date instead.
 
-EXPIRES=$(date -Iseconds -u -d "${DAYS_MAX} days" | sed -e 's/+00:00$/z/')
+EXPIRES=$(date -Iseconds -u -d "${DAYS_MAX} days" | sed -e 's/+00:00$/Z/')
 
 if [ -z ${KEY_EXPIRES+x} ]; then 
   echo -e "\033[0;33mUSING EXPIRE (max ${DAYS_MAX} days): $EXPIRES\033[0;0m"
