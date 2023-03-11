@@ -84,7 +84,7 @@ else
       | grep -Eo 'expires:\ [0-9\-]+' \
       | awk '{ print $2}' \
       | date -Iseconds -u -f - \
-      | sed -e 's/+00:00$/z/'
+      | sed -e 's/+00:00$/Z/'
     )
   echo
 
