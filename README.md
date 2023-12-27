@@ -3,6 +3,8 @@
 Tools related to [RFC 9116][1] (`/.well-known/security.txt`). I am
 optimistically using the plural, even though only one tool has been released.
 
+![ShellCheck](https://github.com/oh2fih/securitytxt-tools/workflows/ShellCheck/badge.svg)
+
 ## RFC 9116 helper; security.txt formatter & PGP signer
 
 #### [`securitytxt-signer.sh`](securitytxt-signer.sh)
