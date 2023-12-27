@@ -1,22 +1,21 @@
 #!/bin/bash
 read -r -d '' USAGE << EOM
-# --------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # RFC 9116 helper; security.txt formatter & PGP signer.
 #
 # Usage: securitytxt-signer.sh input.txt [0xPGPKEY [output.txt]]
 #
-# Removes lines not matching the specification & HTTPS URLs not
-# working, checks for required fields, updates Expires field to
-# today + \$DAYS_MAX days (unless the optional PGP key expires
-# before that). Optionally signs the security.txt with GnuPG &
-# warns on Encryption fields not matching with the signing key.
+# Removes lines not matching the specification & HTTPS URLs not working, checks
+# for required fields, updates Expires field to today + \$DAYS_MAX days (unless
+# the optional PGP key expires before that). Optionally signs the security.txt
+# with GnuPG & warns on Encryption fields not matching with the signing key.
 #
-# Can be used to re-sign a security.txt file with an updated
-# Expires field as the validation removes the current signature.
+# Can be used to re-sign a security.txt file with an updated Expires field as
+# the validation removes the current signature.
 #
 # Author : Esa Jokinen (oh2fih)
 # Home   : https://github.com/oh2fih/securitytxt-tools
-# --------------------------------------------------------------
+# ------------------------------------------------------------------------------
 EOM
 
 # Settings
