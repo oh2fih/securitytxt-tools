@@ -92,6 +92,15 @@ makes these decions. It is rather strict on purpose.
 - For operational reasons, `CRLF` line breaks are replaced with `LF` line
   breaks. This is not required by the specification; [RFC 9116, 2.2][9] allows
   both.
+  - The ABNF Grammar ([RFC 9116, 4][10]) suggests only `CRLF` would be allowed
+    in and after the `cleartext-header` & the `hash-header`. However, that is
+    in contradiction with the [section 2.2][9], and not required by the OpenPGP
+    Message Format ([RFC 4880][11]) either. Instead, OpenPGP Message Format
+    canonicalizes the signed text documents by converting `LF` to `CRLF` before
+    signing ([RFC 4880, 5.4.2][12]). They are converted back when storing the
+    resulting signed message, if that is the native line ending of the receiving
+    software ([RFC 4880, 5.9][13]). Mixing both in the same document would be
+    the worst decision.
 
 [1]: https://www.rfc-editor.org/rfc/rfc9116
 [2]: https://www.rfc-editor.org/rfc/rfc9116#section-2.5
@@ -102,3 +111,7 @@ makes these decions. It is rather strict on purpose.
 [7]: https://www.rfc-editor.org/rfc/rfc7929
 [8]: https://www.rfc-editor.org/rfc/rfc5646
 [9]: https://www.rfc-editor.org/rfc/rfc9116#section-2.2
+[10]: https://www.rfc-editor.org/rfc/rfc9116#section-4
+[11]: https://www.rfc-editor.org/rfc/rfc4880.html
+[12]: https://www.rfc-editor.org/rfc/rfc4880.html#section-5.2.4
+[13]: https://www.rfc-editor.org/rfc/rfc4880.html#section-5.9
