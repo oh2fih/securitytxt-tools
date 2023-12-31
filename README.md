@@ -13,7 +13,7 @@ This command line tool (Bash script) helps building RFC 9116 compliant, valid
 & well formatted security.txt files as well as automating the PGP signing &
 expire date updating process.
 
-#### Usage
+### Usage
 
 ```bash
 securitytxt-signer.sh input.txt [0xPGPKEY [output.txt]]
@@ -32,14 +32,14 @@ fields are referensing a different key than the one used for signing.
 The script can also be used to re-sign a security.txt file with an updated
 `Expires` field as the validation removes the current signature.
 
-#### Requirements
+### Requirements
 
 - GNU Bash
 - `curl` for HTTPS URL validation
 - `gpg` (GnuPG) for signing the security.txt
 - Standard commands `sed`, `awk`, `grep` & `date`.
 
-#### Rationale behind validation decisions
+### Rationale behind validation decisions
 
 The script removes lines it does not support, but informs the user why the line
 was removed. The errors and warnings should be read and the invalid lines should
@@ -87,6 +87,9 @@ makes these decions. It is rather strict on purpose.
   seen is used and the rest are removed. Valid field consists of comma
   separated list of language tags ([RFC 5646][8]), recognized as one to eight
   `a-z` characters with a possible subtag: `[a-z]{1,8}(-[a-z]{1,8})?`.
+
+#### Line breaks
+
 - Multiple consecutive blank lines are replaced with one.
 - If the input file is missing a line break at EOF it will be added.
 - For operational reasons, `CRLF` line breaks are replaced with `LF` line
