@@ -95,15 +95,19 @@ makes these decions. It is rather strict on purpose.
 - For operational reasons, `CRLF` line breaks are replaced with `LF` line
   breaks. This is not required by the specification; [RFC 9116, 2.2][9] allows
   both.
-  - The ABNF Grammar ([RFC 9116, 4][10]) suggests only `CRLF` would be allowed
-    in and after the `cleartext-header` & the `hash-header`. However, that is
-    in contradiction with the [section 2.2][9], and not required by the OpenPGP
-    Message Format ([RFC 4880][11]) either. Instead, OpenPGP Message Format
+  - The ABNF Grammar ([RFC 9116, 4][10]) suggests only CRLF would be allowed
+    elsewhere whereas LF is an option in `cleartext` & `eol`. For consistency,
+    the `CRLF` should either be mandatory or optional on the entire file, and
+    only `CRLF` or `LF` should be used in a single file instead of mixing them.
+  - Using `LF` is not an issue in the context of [RFC 4880][11] that
     canonicalizes the signed text documents by converting `LF` to `CRLF` before
-    signing ([RFC 4880, 5.4.2][12]). They are converted back when storing the
-    resulting signed message, if that is the native line ending of the receiving
-    software ([RFC 4880, 5.9][13]). Mixing both in the same document would be
-    the worst decision.
+    signing ([RFC 4880, 5.4.2][12]), and the receiving software should convert
+    them to native line endings ([RFC 4880, 5.9][13]).
+  - The [section 4][10] references MIME ([RFC 2046, 4.1.1][14]) & `Net-Unicode`
+    ([RFC 5198, 2][15]) that have chosen the `CRLF` sequence as a MUST. As the
+    intention of [section 2.2][9] is to treat line separators more liberally,
+    I have reported [Errata ID 7743][16] to address this by locally redefining
+    `CRLF` as `[CR] LF` in the ABNF Grammar.
 
 [1]: https://www.rfc-editor.org/rfc/rfc9116
 [2]: https://www.rfc-editor.org/rfc/rfc9116#section-2.5
@@ -118,3 +122,6 @@ makes these decions. It is rather strict on purpose.
 [11]: https://www.rfc-editor.org/rfc/rfc4880.html
 [12]: https://www.rfc-editor.org/rfc/rfc4880.html#section-5.2.4
 [13]: https://www.rfc-editor.org/rfc/rfc4880.html#section-5.9
+[14]: https://www.rfc-editor.org/rfc/rfc2046#section-4.1.1
+[15]: https://www.rfc-editor.org/rfc/rfc5198#section-2
+[16]: https://www.rfc-editor.org/errata/eid7743
