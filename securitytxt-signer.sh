@@ -368,7 +368,8 @@ fi
 echo -e '\033[0;33m---\033[0m'
 
 echo "$FORMATTED" \
-  | gpg --clearsign --local-user "$KEY" --output "$OUTFILE" \
+  | gpg --clearsign --digest-algo SHA512 \
+    --local-user "$KEY" --output "$OUTFILE" \
   2> >(sed $'s,.*,\e[33m&\e[m,'>&2) \
   || exit 1
 
