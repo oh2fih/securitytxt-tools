@@ -81,14 +81,25 @@ if ! [[ "$KEY" =~ ^0x[a-fA-F0-9]{8,40}$ ]]; then
 else
   KEY_INFO=$(gpg --list-secret-keys "$KEY" 2> >(sed $'s,.*,\e[33m&\e[m,'>&2))
 
-  KEY_EXPIRES=$(
-    echo "$KEY_INFO" \
-      | grep "sec" \
-      | grep -Eo 'expires:\ [0-9\-]+' \
-      | awk '{ print $2}' \
-      | ( (( IS_MAC )) && date -Iseconds -u || date -Iseconds -u -f - ) \
-      | sed -e 's/+00:00$/Z/'
-    )
+  if (( IS_MAC )); then
+    KEY_EXPIRES=$(
+      echo "$KEY_INFO" \
+        | grep "sec" \
+        | grep -Eo 'expires:\ [0-9\-]+' \
+        | awk '{ print $2}' \
+        | date -Iseconds -u \
+        | sed -e 's/+00:00$/Z/'
+      )
+  else
+    KEY_EXPIRES=$(
+      echo "$KEY_INFO" \
+        | grep "sec" \
+        | grep -Eo 'expires:\ [0-9\-]+' \
+        | awk '{ print $2}' \
+        | date -Iseconds -u -f - \
+        | sed -e 's/+00:00$/Z/'
+      )
+  fi
   echo
 
   if [[ "$KEY_EXPIRES" = "" ]]; then
