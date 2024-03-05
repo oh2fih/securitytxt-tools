@@ -35,7 +35,7 @@ fi
 
 # Prepare environment
 
-[[ "$(uname)" == "Darwin" ]] && IS_MAC=true || IS_MAC=false
+[[ "$(uname)" == "Darwin" ]] && IS_MAC=1 || IS_MAC=0
 
 # Check for requirements. Print all unmet requirements at once.
 
@@ -86,7 +86,7 @@ else
       | grep "sec" \
       | grep -Eo 'expires:\ [0-9\-]+' \
       | awk '{ print $2}' \
-      | ( [[ IS_MAC ]] && date -Iseconds -u || date -Iseconds -u -f - ) \
+      | ( (( IS_MAC )) && date -Iseconds -u || date -Iseconds -u -f - ) \
       | sed -e 's/+00:00$/Z/'
     )
   echo
@@ -119,7 +119,7 @@ fi
 # Set expire date. 
 # If the key expires before the DAYS_MAX, use the key expiration date instead.
 
-if [[ IS_MAC ]]; then
+if (( IS_MAC )); then
   EXPIRES=$(date -Iseconds -u -v+${DAYS_MAX}d | sed -e 's/+00:00$/Z/')
 else
   EXPIRES=$(date -Iseconds -u -d "${DAYS_MAX} days" | sed -e 's/+00:00$/Z/')
@@ -128,7 +128,7 @@ fi
 if [ -z ${KEY_EXPIRES+x} ]; then 
   echo -e "\033[0;33mUSING EXPIRE (max ${DAYS_MAX} days): $EXPIRES\033[0;0m"
 else
-  if [[ IS_MAC ]]; then
+  if (( IS_MAC )); then
     EXPIRES_COMPARABLE=$(date -j -f "%Y-%m-%dT%H:%M:%SZ" "$EXPIRES" +%s)
     KEY_EXPIRES_COMPARABLE=$(date -j -f "%Y-%m-%dT%H:%M:%SZ" "$KEY_EXPIRES" +%s)
   else
