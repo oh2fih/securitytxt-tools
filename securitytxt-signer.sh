@@ -100,8 +100,8 @@ else
   GREPABLE_KEY=${KEY//0x/}
   FP=$(echo "$KEY_INFO" | grep -i "$GREPABLE_KEY" | sed -e 's/[^A-F0-9]//g')
   KEY="0x${FP}"
-  if ! [[ "${KEY}" = "0x$(echo "${GREPABLE_KEY}" | tr '[:lower:]' '[:upper:]')" ]]; then
-    echo -e "\033[0;33mEXPANDED 0x$(echo "${GREPABLE_KEY}" | tr '[:lower:]' '[:upper:]') TO ${KEY}\033[0;0m"
+  if ! [[ "${KEY}" = "0x$(echo "${GREPABLE_KEY}" | awk '{print toupper($0)}')" ]]; then
+    echo -e "\033[0;33mEXPANDED 0x$(echo "${GREPABLE_KEY}" | awk '{print toupper($0)}') TO ${KEY}\033[0;0m"
   fi
 fi
 
