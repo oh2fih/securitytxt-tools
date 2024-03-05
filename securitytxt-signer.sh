@@ -33,6 +33,10 @@ if [ "$#" -lt 1 ]; then
   exit 1
 fi
 
+# Prepare environment
+
+[[ "$(uname)" == "Darwin" ]] && IS_MAC=true || IS_MAC=false
+
 # Check for requirements. Print all unmet requirements at once.
 
 required_command() {
@@ -82,7 +86,7 @@ else
       | grep "sec" \
       | grep -Eo 'expires:\ [0-9\-]+' \
       | awk '{ print $2}' \
-      | date -Iseconds -u -f - \
+      | ( [[ IS_MAC ]] && date -Iseconds -u || date -Iseconds -u -f - ) \
       | sed -e 's/+00:00$/Z/'
     )
   echo
@@ -96,8 +100,8 @@ else
   GREPABLE_KEY=${KEY//0x/}
   FP=$(echo "$KEY_INFO" | grep -i "$GREPABLE_KEY" | sed -e 's/[^A-F0-9]//g')
   KEY="0x${FP}"
-  if ! [[ "${KEY}" = "0x${GREPABLE_KEY^^}" ]]; then
-    echo -e "\033[0;33mEXPANDED 0x${GREPABLE_KEY^^} TO ${KEY}\033[0;0m"
+  if ! [[ "${KEY}" = "0x$(echo "${GREPABLE_KEY}" | tr '[:lower:]' '[:upper:]')" ]]; then
+    echo -e "\033[0;33mEXPANDED 0x$(echo "${GREPABLE_KEY}" | tr '[:lower:]' '[:upper:]') TO ${KEY}\033[0;0m"
   fi
 fi
 
@@ -115,13 +119,22 @@ fi
 # Set expire date. 
 # If the key expires before the DAYS_MAX, use the key expiration date instead.
 
-EXPIRES=$(date -Iseconds -u -d "${DAYS_MAX} days" | sed -e 's/+00:00$/Z/')
+if [[ IS_MAC ]]; then
+  EXPIRES=$(date -Iseconds -u -v+${DAYS_MAX}d | sed -e 's/+00:00$/Z/')
+else
+  EXPIRES=$(date -Iseconds -u -d "${DAYS_MAX} days" | sed -e 's/+00:00$/Z/')
+fi
 
 if [ -z ${KEY_EXPIRES+x} ]; then 
   echo -e "\033[0;33mUSING EXPIRE (max ${DAYS_MAX} days): $EXPIRES\033[0;0m"
 else
-  EXPIRES_COMPARABLE=$(date -d "$EXPIRES" +%s)
-  KEY_EXPIRES_COMPARABLE=$(date -d "$KEY_EXPIRES" +%s)
+  if [[ IS_MAC ]]; then
+    EXPIRES_COMPARABLE=$(date -j -f "%Y-%m-%dT%H:%M:%SZ" "$EXPIRES" +%s)
+    KEY_EXPIRES_COMPARABLE=$(date -j -f "%Y-%m-%dT%H:%M:%SZ" "$KEY_EXPIRES" +%s)
+  else
+    EXPIRES_COMPARABLE=$(date -d "$EXPIRES" +%s)
+    KEY_EXPIRES_COMPARABLE=$(date -d "$KEY_EXPIRES" +%s)
+  fi
 
   echo -e "\033[0;33mComparing ${EXPIRES} to key expr ${KEY_EXPIRES}.\033[0;0m"
 
