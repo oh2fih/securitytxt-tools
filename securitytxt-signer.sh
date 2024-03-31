@@ -33,10 +33,6 @@ if [ "$#" -lt 1 ]; then
   exit 1
 fi
 
-# Prepare environment
-
-[[ "$(uname)" == "Darwin" ]] && IS_MAC=1 || IS_MAC=0
-
 # Check for requirements. Print all unmet requirements at once.
 
 required_command() {
@@ -77,6 +73,15 @@ if [ "$UNMET" -gt 0 ]; then
   exit 1
 fi
 
+# Compatibility for non-GNU date
+
+if date --version >/dev/null 2>&1; then
+  GNU_DATE=1
+else
+  echo -e "\033[0;33mIn compatibility mode for non-GNU date command.\033[0m" >&2
+  GNU_DATE=0
+fi
+
 shopt -s nocasematch
 
 # Validate the PGP key.
@@ -87,13 +92,13 @@ if ! [[ "$KEY" =~ ^0x[a-fA-F0-9]{8,40}$ ]]; then
 else
   KEY_INFO=$(gpg --list-secret-keys "$KEY" 2> >(sed $'s,.*,\e[33m&\e[m,'>&2))
 
-  if (( IS_MAC )); then
+  if (( GNU_DATE )); then
     KEY_EXPIRES=$(
       echo "$KEY_INFO" \
         | grep "sec" \
         | grep -Eo 'expires:\ [0-9\-]+' \
         | awk '{ print $2}' \
-        | date -Iseconds -u \
+        | date -Iseconds -u -f - \
         | sed -e 's/+00:00$/Z/'
       )
   else
@@ -102,7 +107,7 @@ else
         | grep "sec" \
         | grep -Eo 'expires:\ [0-9\-]+' \
         | awk '{ print $2}' \
-        | date -Iseconds -u -f - \
+        | date -Iseconds -u \
         | sed -e 's/+00:00$/Z/'
       )
   fi
@@ -136,21 +141,21 @@ fi
 # Set expire date. 
 # If the key expires before the DAYS_MAX, use the key expiration date instead.
 
-if (( IS_MAC )); then
-  EXPIRES=$(date -Iseconds -u -v+${DAYS_MAX}d | sed -e 's/+00:00$/Z/')
-else
+if (( GNU_DATE )); then
   EXPIRES=$(date -Iseconds -u -d "${DAYS_MAX} days" | sed -e 's/+00:00$/Z/')
+else
+  EXPIRES=$(date -Iseconds -u -v+${DAYS_MAX}d | sed -e 's/+00:00$/Z/')
 fi
 
 if [ -z ${KEY_EXPIRES+x} ]; then 
   echo -e "\033[0;33mUSING EXPIRE (max ${DAYS_MAX} days): $EXPIRES\033[0;0m"
 else
-  if (( IS_MAC )); then
-    EXPIRES_COMPARABLE=$(date -j -f "%Y-%m-%dT%H:%M:%SZ" "$EXPIRES" +%s)
-    KEY_EXPIRES_COMPARABLE=$(date -j -f "%Y-%m-%dT%H:%M:%SZ" "$KEY_EXPIRES" +%s)
-  else
+  if (( GNU_DATE )); then
     EXPIRES_COMPARABLE=$(date -d "$EXPIRES" +%s)
     KEY_EXPIRES_COMPARABLE=$(date -d "$KEY_EXPIRES" +%s)
+  else
+    EXPIRES_COMPARABLE=$(date -j -f "%Y-%m-%dT%H:%M:%SZ" "$EXPIRES" +%s)
+    KEY_EXPIRES_COMPARABLE=$(date -j -f "%Y-%m-%dT%H:%M:%SZ" "$KEY_EXPIRES" +%s)
   fi
 
   echo -e "\033[0;33mComparing ${EXPIRES} to key expr ${KEY_EXPIRES}.\033[0;0m"
