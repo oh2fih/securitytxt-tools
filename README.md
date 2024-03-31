@@ -13,8 +13,6 @@ This command line tool (Bash script) helps building RFC 9116 compliant, valid
 & well formatted security.txt files as well as automating the PGP signing &
 expire date updating process.
 
-Requires Bash >= 4.0. Compatible with both GNU coreutils & BSD `date`.
-
 ### Usage
 
 ```bash
@@ -36,10 +34,11 @@ The script can also be used to re-sign a security.txt file with an updated
 
 ### Requirements
 
-- GNU Bash
-- `curl` for HTTPS URL validation
-- `gpg` (GnuPG) for signing the security.txt
-- Standard commands `sed`, `awk`, `grep` & `date`.
+- GNU Bash >= 4.0.
+- `curl` for HTTPS URL validation.
+- `gpg` (GnuPG) for signing the security.txt.
+- Standard commands `sed`, `awk` & `grep`.
+- `date`: Compatible with both GNU coreutils & BSD `date`.
 
 ### Rationale behind validation decisions
 
