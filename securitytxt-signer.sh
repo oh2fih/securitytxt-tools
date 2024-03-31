@@ -52,6 +52,12 @@ required_command() {
 
 UNMET=0
 
+if ((BASH_VERSINFO[0] < 4)); then
+  echo -e "\033[0;31mThis script requires bash >= 4.0\033[0m" >&2
+  echo -e "\033[0;31mYour bash ${BASH_VERSION} is unsupported.\033[0m" >&2
+  ((UNMET=UNMET+1))
+fi
+
 required_command "sed"
 required_command "awk"
 required_command "grep"
