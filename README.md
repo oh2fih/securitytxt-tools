@@ -13,6 +13,8 @@ This command line tool (Bash script) helps building RFC 9116 compliant, valid
 & well formatted security.txt files as well as automating the PGP signing &
 expire date updating process.
 
+Requires Bash >= 4.0. Compatible with both GNU coreutils & BSD `date`.
+
 ### Usage
 
 ```bash
