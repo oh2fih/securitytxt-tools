@@ -120,7 +120,7 @@ else
 
   # Replace PGP IDs with the full PGP fingerprint.
   GREPABLE_KEY=${KEY//0x/}
-  FP=$(echo "$KEY_INFO" | grep -i "$GREPABLE_KEY" | sed -e 's/[^A-F0-9]//g')
+  FP=$(echo "$KEY_INFO" | grep -i "${GREPABLE_KEY}\$" | sed -e 's/[^A-F0-9]//g')
   KEY="0x${FP}"
   if ! [[ "${KEY}" = "0x${GREPABLE_KEY^^}" ]]; then
     echo -e "\033[0;33mEXPANDED 0x${GREPABLE_KEY^^} TO ${KEY}\033[0;0m"
